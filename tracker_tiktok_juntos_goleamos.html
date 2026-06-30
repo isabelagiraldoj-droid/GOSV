@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Marcador Reto TikTok — Juntos Goleamos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pitch-dark:#0E1A14;
+    --pitch-card:#16261D;
+    --pitch-line:#23362A;
+    --coke-red:#E2231A;
+    --goal-green:#5FBF6E;
+    --pending-amber:#D9A23B;
+    --cream:#F4F1EA;
+    --muted:#9FB0A6;
+    --display:'Oswald',sans-serif;
+    --body:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 50% -10%, #1B3024 0%, var(--pitch-dark) 55%);
+    color:var(--cream);
+    font-family:var(--body);
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:920px;margin:0 auto;}
+
+  /* SCOREBOARD HEADER */
+  .scoreboard{
+    background:var(--pitch-card);
+    border:1px solid var(--pitch-line);
+    border-radius:14px;
+    padding:22px 26px;
+    margin-bottom:22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .scoreboard::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 38px);
+    pointer-events:none;
+  }
+  .sb-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+  .sb-title{font-family:var(--display);font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:13px;color:var(--muted);}
+  .sb-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .sb-score{
+    font-family:var(--display);
+    font-size:54px;
+    font-weight:700;
+    line-height:1;
+    letter-spacing:.01em;
+    white-space:nowrap;
+  }
+  .sb-score span{color:var(--goal-green);}
+  .sb-score small{font-size:20px;color:var(--muted);font-weight:500;}
+  .sb-bar{
+    margin-top:16px;
+    height:10px;border-radius:6px;
+    background:var(--pitch-line);
+    overflow:hidden;
+  }
+  .sb-bar-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--goal-green),#7fd98c);
+    width:0%;
+    transition:width .4s ease;
+  }
+  .sb-foot{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--muted);}
+
+  /* CONTROLS */
+  .controls{
+    display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;
+  }
+  .controls input[type="text"]{
+    flex:1;min-width:160px;
+    background:var(--pitch-card);
+    border:1px solid var(--pitch-line);
+    color:var(--cream);
+    padding:10px 14px;border-radius:9px;
+    font-family:var(--body);font-size:14px;
+  }
+  .controls input[type="text"]::placeholder{color:var(--muted);}
+  select{
+    background:var(--pitch-card);
+    border:1px solid var(--pitch-line);
+    color:var(--cream);
+    padding:10px 12px;border-radius:9px;
+    font-family:var(--body);font-size:14px;
+  }
+  .reset-btn{
+    background:none;border:1px solid var(--pitch-line);color:var(--muted);
+    padding:10px 14px;border-radius:9px;font-size:13px;cursor:pointer;
+    font-family:var(--body);
+  }
+  .reset-btn:hover{border-color:var(--coke-red);color:var(--coke-red);}
+
+  /* TEAM GROUPS */
+  .team{
+    background:var(--pitch-card);
+    border:1px solid var(--pitch-line);
+    border-radius:12px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .team-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 18px;cursor:pointer;
+    user-select:none;
+  }
+  .team-head:hover{background:rgba(255,255,255,0.02);}
+  .team-name-block{display:flex;align-items:baseline;gap:10px;}
+  .team-gerencia{
+    font-family:var(--display);font-size:11px;letter-spacing:.06em;
+    color:var(--coke-red);text-transform:uppercase;font-weight:600;
+  }
+  .team-name{font-family:var(--display);font-size:17px;font-weight:600;}
+  .team-score{
+    font-family:var(--display);font-size:15px;color:var(--muted);
+    display:flex;align-items:center;gap:10px;
+  }
+  .team-score b{color:var(--goal-green);font-size:16px;}
+  .mini-bar{width:70px;height:6px;border-radius:4px;background:var(--pitch-line);overflow:hidden;}
+  .mini-fill{height:100%;background:var(--goal-green);}
+  .chevron{transition:transform .2s ease;color:var(--muted);margin-left:8px;}
+  .team.open .chevron{transform:rotate(90deg);}
+
+  .roster{display:none;border-top:1px solid var(--pitch-line);}
+  .team.open .roster{display:block;}
+  .row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:11px 18px;gap:12px;
+    border-bottom:1px solid var(--pitch-line);
+  }
+  .row:last-child{border-bottom:none;}
+  .row-info{display:flex;flex-direction:column;gap:2px;}
+  .row-name{font-size:14.5px;font-weight:500;}
+  .row-code{font-size:11.5px;color:var(--muted);font-family:var(--display);letter-spacing:.03em;}
+
+  .status-tag{
+    display:flex;align-items:center;gap:8px;
+  }
+  .badge{
+    font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.04em;
+    padding:4px 9px;border-radius:5px;text-transform:uppercase;
+  }
+  .badge.gol{background:rgba(95,191,110,0.15);color:var(--goal-green);}
+  .badge.pend{background:rgba(217,162,59,0.15);color:var(--pending-amber);}
+
+  .switch{
+    position:relative;width:46px;height:25px;border-radius:14px;
+    background:var(--pitch-line);cursor:pointer;flex-shrink:0;
+    transition:background .2s ease;
+  }
+  .switch.on{background:var(--goal-green);}
+  .switch::after{
+    content:"";position:absolute;top:3px;left:3px;
+    width:19px;height:19px;border-radius:50%;background:var(--cream);
+    transition:left .2s ease;
+  }
+  .switch.on::after{left:24px;}
+
+  .empty-msg{padding:30px;text-align:center;color:var(--muted);font-size:14px;}
+  .note{font-size:12px;color:var(--muted);margin-top:18px;line-height:1.6;}
+  .loading{text-align:center;padding:60px 0;color:var(--muted);font-family:var(--display);letter-spacing:.05em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="scoreboard">
+    <div class="sb-top">
+      <div>
+        <div class="sb-title">Reto TikTok · App Juntos Goleamos</div>
+        <div class="sb-sub">Marcador de cumplimiento por jefatura</div>
+      </div>
+      <div class="sb-score" id="sbScore">– <small>/ –</small></div>
+    </div>
+    <div class="sb-bar"><div class="sb-bar-fill" id="sbBarFill"></div></div>
+    <div class="sb-foot">
+      <span id="sbPercent">0% completado</span>
+      <span id="sbPending">– pendientes</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Buscar jefe de ventas o código...">
+    <select id="filterGerencia">
+      <option value="">Todas las gerencias</option>
+    </select>
+    <select id="filterStatus">
+      <option value="">Todos los estados</option>
+      <option value="gol">Ya posteó</option>
+      <option value="pend">Pendiente</option>
+    </select>
+    <button class="reset-btn" id="resetBtn">Reiniciar marcador</button>
+  </div>
+
+  <div id="teamsContainer" class="loading">Cargando marcador...</div>
+
+  <div class="note">
+    Se excluyó Camilo Roa (COB5) según indicación. El estado de cada jefatura se guarda automáticamente — puedes cerrar y volver a abrir este tablero y los cambios quedan.
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {gerencia:"COF2", gerente:"Joseph Arenas", code:"BF1", nombre:"Katerine Camacho"},
+  {gerencia:"COF2", gerente:"Joseph Arenas", code:"BF2", nombre:"Liliana Gerena"},
+  {gerencia:"COF2", gerente:"Joseph Arenas", code:"BF3", nombre:"Brayan Cardona"},
+  {gerencia:"COF2", gerente:"Joseph Arenas", code:"BF4", nombre:"Francisco Chica"},
+  {gerencia:"COF2", gerente:"Joseph Arenas", code:"BF5", nombre:"Jorge Sotelo"},
+
+  {gerencia:"COB2", gerente:"Yesid Lopez", code:"OB6", nombre:"Guillermo Ortiz"},
+  {gerencia:"COB2", gerente:"Yesid Lopez", code:"OB7", nombre:"Jhon Amorocho"},
+  {gerencia:"COB2", gerente:"Yesid Lopez", code:"OB8", nombre:"Damar Abril"},
+  {gerencia:"COB2", gerente:"Yesid Lopez", code:"OB9", nombre:"Juan Rozo"},
+  {gerencia:"COB2", gerente:"Yesid Lopez", code:"OBT", nombre:"Wilber Valderrama"},
+
+  {gerencia:"COF3", gerente:"Diego Suarez", code:"BFD", nombre:"Fabian Torres"},
+  {gerencia:"COF3", gerente:"Diego Suarez", code:"BFE", nombre:"Isnardo Perez"},
+  {gerencia:"COF3", gerente:"Diego Suarez", code:"BFH", nombre:"Jose Guarin"},
+  {gerencia:"COF3", gerente:"Diego Suarez", code:"BFI", nombre:"Johan Avila"},
+
+  {gerencia:"COD2", gerente:"Carlos Barreto", code:"ODJ", nombre:"Jose Santana"},
+  {gerencia:"COD1", gerente:"Carlos Barreto", code:"OD1", nombre:"Rafael Bernal"},
+  {gerencia:"COD1", gerente:"Carlos Barreto", code:"OD2", nombre:"Angie Polo"},
+
+  {gerencia:"COS1", gerente:"Luis Canabal", code:"OS1", nombre:"Juan Dominguez"},
+  {gerencia:"COS1", gerente:"Luis Canabal", code:"OS2", nombre:"Luz Dary Vivas Castillo"},
+  {gerencia:"COS1", gerente:"Luis Canabal", code:"OS3", nombre:"Julian Vega"},
+  {gerencia:"COS1", gerente:"Luis Canabal", code:"OSD", nombre:"Anderson Avila"},
+  {gerencia:"COS1", gerente:"Luis Canabal", code:"OSV", nombre:"Juan Silgado"},
+  {gerencia:"COS1", gerente:"Luis Canabal", code:"OSE", nombre:"Johan Ortiz (E)"},
+  {gerencia:"COB8", gerente:"Luis Canabal", code:"O7N", nombre:"Cristian Rodriguez"},
+
+  {gerencia:"COS2", gerente:"Andres Suarez", code:"OS9", nombre:"David Roncancio"},
+  {gerencia:"COS2", gerente:"Andres Suarez", code:"OS8", nombre:"Carlos Tequia"},
+  {gerencia:"COB7", gerente:"Andres Suarez", code:"O1N", nombre:"Dilan Romero"},
+  {gerencia:"COB7", gerente:"Andres Suarez", code:"O2N", nombre:"Erick Manrique"},
+  {gerencia:"COB7", gerente:"Andres Suarez", code:"O3N", nombre:"Jeisson Pamplona"},
+  {gerencia:"COB7", gerente:"Andres Suarez", code:"O4N", nombre:"Rafael Anaya"},
+
+  {gerencia:"COV1", gerente:"Cesar Rueda", code:"OV0", nombre:"Erika Velasquez"},
+  {gerencia:"COV1", gerente:"Cesar Rueda", code:"OV1", nombre:"Victor Mosquera"},
+  {gerencia:"COV1", gerente:"Cesar Rueda", code:"OV2", nombre:"Yeiso Espinoza"},
+  {gerencia:"COV1", gerente:"Cesar Rueda", code:"OY7", nombre:"Jhon Quiroga"},
+];
+
+let statusMap = {}; // code -> true/false
+let openTeams = new Set();
+
+async function loadStatus(){
+  const keys = DATA.map(d => 'tiktok-status:' + d.code);
+  for (const d of DATA){
+    try{
+      const res = await window.storage.get('tiktok-status:' + d.code);
+      statusMap[d.code] = res ? res.value === 'true' : false;
+    }catch(e){
+      statusMap[d.code] = false;
+    }
+  }
+}
+
+async function setStatus(code, val){
+  statusMap[code] = val;
+  try{
+    await window.storage.set('tiktok-status:' + code, val ? 'true' : 'false');
+  }catch(e){
+    console.error('No se pudo guardar el estado', e);
+  }
+}
+
+function groupByGerente(rows){
+  const order = [];
+  const map = {};
+  rows.forEach(r => {
+    const key = r.gerente;
+    if(!map[key]){ map[key] = {gerente:key, gerencias:new Set(), rows:[]}; order.push(key); }
+    map[key].gerencias.add(r.gerencia);
+    map[key].rows.push(r);
+  });
+  return order.map(k => map[k]);
+}
+
+function render(){
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filterGerencia = document.getElementById('filterGerencia').value;
+  const filterStatus = document.getElementById('filterStatus').value;
+
+  let filtered = DATA.filter(d => {
+    if(filterGerencia && d.gerencia !== filterGerencia) return false;
+    const isGol = statusMap[d.code];
+    if(filterStatus === 'gol' && !isGol) return false;
+    if(filterStatus === 'pend' && isGol) return false;
+    if(search){
+      const hay = (d.nombre + ' ' + d.code + ' ' + d.gerente + ' ' + d.gerencia).toLowerCase();
+      if(!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  const groups = groupByGerente(filtered);
+  const container = document.getElementById('teamsContainer');
+  container.classList.remove('loading');
+
+  if(groups.length === 0){
+    container.innerHTML = '<div class="empty-msg">No hay jefaturas que coincidan con el filtro.</div>';
+  } else {
+    container.innerHTML = groups.map(g => {
+      const total = g.rows.length;
+      const done = g.rows.filter(r => statusMap[r.code]).length;
+      const pct = total ? Math.round((done/total)*100) : 0;
+      const isOpen = openTeams.has(g.gerente);
+      const gerenciasStr = Array.from(g.gerencias).join(' / ');
+      return `
+        <div class="team ${isOpen ? 'open' : ''}" data-gerente="${g.gerente}">
+          <div class="team-head" data-toggle="${g.gerente}">
+            <div class="team-name-block">
+              <span class="team-gerencia">${gerenciasStr}</span>
+              <span class="team-name">${g.gerente}</span>
+            </div>
+            <div class="team-score">
+              <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
+              <span><b>${done}</b> / ${total}</span>
+              <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+          <div class="roster">
+            ${g.rows.map(r => {
+              const isGol = statusMap[r.code];
+              return `
+                <div class="row">
+                  <div class="row-info">
+                    <span class="row-name">${r.nombre}</span>
+                    <span class="row-code">${r.code} · ${r.gerencia}</span>
+                  </div>
+                  <div class="status-tag">
+                    <span class="badge ${isGol ? 'gol' : 'pend'}">${isGol ? '⚽ Gol' : 'Pendiente'}</span>
+                    <div class="switch ${isGol ? 'on' : ''}" data-code="${r.code}"></div>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // attach handlers
+  container.querySelectorAll('[data-toggle]').forEach(el => {
+    el.addEventListener('click', () => {
+      const g = el.getAttribute('data-toggle');
+      if(openTeams.has(g)) openTeams.delete(g); else openTeams.add(g);
+      render();
+    });
+  });
+  container.querySelectorAll('.switch').forEach(el => {
+    el.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const code = el.getAttribute('data-code');
+      const newVal = !statusMap[code];
+      await setStatus(code, newVal);
+      render();
+      renderScoreboard();
+    });
+  });
+
+  renderScoreboard();
+}
+
+function renderScoreboard(){
+  const total = DATA.length;
+  const done = DATA.filter(d => statusMap[d.code]).length;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('sbScore').innerHTML = `<span>${done}</span> <small>/ ${total}</small>`;
+  document.getElementById('sbBarFill').style.width = pct + '%';
+  document.getElementById('sbPercent').textContent = pct + '% completado';
+  document.getElementById('sbPending').textContent = (total - done) + ' pendientes';
+}
+
+function setupFilters(){
+  const gerencias = Array.from(new Set(DATA.map(d => d.gerencia))).sort();
+  const sel = document.getElementById('filterGerencia');
+  gerencias.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g; opt.textContent = g;
+    sel.appendChild(opt);
+  });
+  document.getElementById('searchInput').addEventListener('input', render);
+  document.getElementById('filterGerencia').addEventListener('change', render);
+  document.getElementById('filterStatus').addEventListener('change', render);
+  document.getElementById('resetBtn').addEventListener('click', async () => {
+    if(!confirm('¿Reiniciar el marcador? Esto pondrá todas las jefaturas como pendientes.')) return;
+    for(const d of DATA){ await setStatus(d.code, false); }
+    render();
+  });
+}
+
+(async function init(){
+  setupFilters();
+  await loadStatus();
+  render();
+})();
+</script>
+</body>
+</html>
